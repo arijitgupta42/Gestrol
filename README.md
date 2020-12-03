@@ -10,4 +10,6 @@ Then simply run the application by
 ```
 python superres.py
 ```
-The rest of the instructions will appear in the command prompt window as required
+The rest of the instructions will appear in the command prompt window as required 
+
+> The training of the model along with the link to the dataset is in the model_training notebook
