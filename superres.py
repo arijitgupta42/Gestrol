@@ -8,6 +8,7 @@ https://gogul.dev/software/hand-gesture-recognition-p1
 
 # import the necessary packages
 from imutils.video import VideoStream
+from keyboard import map_key
 import argparse
 import imutils
 import time
@@ -24,13 +25,22 @@ from pynput.keyboard import Key,Controller
 keyboard = Controller()
 
 tfmodel = tf.keras.models.load_model('models/CNN.h5')
-classes= ['Fist','Open Hand','Two Fingers']
+classes= ['Fist','Open Hand', 'OK', "Thumbs Down", "Thumbs Up"]
 
 # declaring some global variables
 bg = None
 utils.bg = bg
 num_frames = 0
-aWeight = 0.5
+aWeight = 0.35
+
+# Map the keys that you wish to control
+print("[INFO] Mapping the keys you want to control")
+print("[INFO] Enter the key you wish to map to the Open Hand gesture")
+key1 = map_key()
+print("The key mapped was {}".format(key1))
+print("[INFO] Enter the key you wish to map to the Two Fingers gesture")
+key2 = map_key()
+print("The key mapped was {}".format(key2))
 
 # declaring the model to be used for super-resolution
 model = "models/FSRCNN_x3.pb"
@@ -99,7 +109,7 @@ while True:
 			# display the segmented image
 			thresholded = imutils.resize(thresholded, height=125)
 			thresholded = np.stack((thresholded,)*3, axis=-1)
-			tfimage=thresholded.reshape(-1,125,125,3)
+			tfimage=cv2.flip(thresholded,1).reshape(-1,125,125,3)
 			'''
 			for i in range(125):
 				for j in range(125):
@@ -111,17 +121,18 @@ while True:
 			pred = 0
 			if num_frames%2==0:
 				pred = (np.argmax(tfmodel.predict(tfimage), axis=-1)[0])
-			
+				print(classes[pred])
+			'''
 			if pred==1:
-				keyboard.release(Key.down)
-				keyboard.press(Key.space)
-				keyboard.release(Key.space)
+				keyboard.release(key2)
+				keyboard.press(key1)
 				print(classes[pred])
 			
 			elif pred==2:
-				keyboard.press(Key.down)
+				keyboard.release(key1)
+				keyboard.press(key2)
 				print(classes[pred])
-			
+			'''
 			frame = np.concatenate((frame, thresholded), axis=1)
 		
 			# cv2.imshow("Input Recieved", thresholded)

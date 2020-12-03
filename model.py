@@ -19,6 +19,17 @@ from google.colab import files
 import warnings
 warnings.simplefilter("ignore")
 
+!pip install -q kaggle
+files.upload()
+
+!mkdir ~/.kaggle
+!cp kaggle.json ~/.kaggle
+!chmod 600 ~/.kaggle/kaggle.json
+
+!kaggle datasets download -d sarjit07/hand-gesture-recog-dataset
+
+!unzip -q hand-gesture-recog-dataset.zip -d HandGest
+
 # Commented out IPython magic to ensure Python compatibility.
 import pandas as pd
 import numpy as np
@@ -35,7 +46,7 @@ import matplotlib.image as mpimg
 # %matplotlib inline
 
 plt.figure(figsize=(20,20))
-img_folder="HandGest/Fist"
+img_folder="HandGest/data/thumbsup"
 for i in range(5):
     file = random.choice(os.listdir(img_folder))
     image_path= os.path.join(img_folder, file)
@@ -46,7 +57,9 @@ for i in range(5):
 
 IMG_WIDTH=125
 IMG_HEIGHT=125
-img_folder='HandGest'
+img_folder='HandGest/data'
+
+!rm -r 'HandGest/data/blank'
 
 def create_dataset(img_folder):
    
@@ -89,7 +102,7 @@ model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(64, (3, 3), activation='relu')) 
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Flatten())
-model.add(layers.Dense(3, activation='softmax'))
+model.add(layers.Dense(5, activation='softmax'))
 model.compile(optimizer='rmsprop', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 model.summary()
 
@@ -100,6 +113,14 @@ print("Accuracy:" + str(acc))
 
 """You'll get slightly different numbers each time you run it but you should be getting between 99.9 and 100% accuracy. Great!"""
 
-model.save('my_model.h5')
+image = cv2.imread("/content/HandGest/data/thumbsdown/down0.jpg")
+image = cv2.resize(image, (125,125))
+image=np.array(image)
+image = image.astype('float32')
+image /= 255 
+image = image.reshape(-1,125,125,3)
+image.shape
+np.argmax(model.predict(image), axis=-1)[0]
 
+model.save("CNN.h5")
 
