@@ -34,14 +34,16 @@ num_frames = 0
 aWeight = 0.35
 
 # Map the keys that you wish to control
-print("[INFO] Mapping the keys you want to control")
-print("[INFO] Enter the key you wish to map to the Open Hand gesture")
-key1 = map_key()
-print("The key mapped was {}".format(key1))
-print("[INFO] Enter the key you wish to map to the Two Fingers gesture")
-key2 = map_key()
-print("The key mapped was {}".format(key2))
-
+print("[INFO] Enter the number of keys you wish to map (Max 5)")
+num_keys = int(input())
+classes = classes[:num_keys]
+keys=[]
+for gesture in classes:
+	print("[INFO] Enter the key you wish to map to the {} gesture".format(gesture))
+	key = map_key()
+	keys.append(key)
+	print("The key mapped was {}".format(key))
+	
 # declaring the model to be used for super-resolution
 model = "models/FSRCNN_x3.pb"
 modelName = model.split(os.path.sep)[-1].split("_")[0].split('/')[-1].lower()
@@ -118,10 +120,17 @@ while True:
 			'''
 
 			#print(thresholded)
-			pred = 0
-			if num_frames%2==0:
-				pred = (np.argmax(tfmodel.predict(tfimage), axis=-1)[0])
-				print(classes[pred])
+			try:
+				temp = pred
+			except:
+				temp = (np.argmax(tfmodel.predict(tfimage), axis=-1)[0])
+			
+			pred = (np.argmax(tfmodel.predict(tfimage), axis=-1)[0])
+			if pred < num_keys:
+				if temp < num_keys:
+					keyboard.release(keys[temp]) and temp!=pred 
+				keyboard.press(keys[pred])
+
 			'''
 			if pred==1:
 				keyboard.release(key2)
